@@ -3,6 +3,10 @@
 #include <thread>
 #include <iostream>
 
+#pragma region Constants
+static const unsigned int DEFAULT_RECEIVE_BUFFER_LENGTH = 512u;
+#pragma endregion
+
 #pragma region Public methods
 Server::Server(unsigned short port):
     port(port)
@@ -69,10 +73,65 @@ void Server::Start()
         }
         std::lock_guard<std::mutex> lockGuard(this->clientDataLock);
         this->clientSockets.push_back(newClientSocket);
-        std::cout << "Accepted client connection." << std::endl;
+        // Spin up new thread to handle this client
+        std::thread(&Server::receive, this, newClientSocket).detach();
+        std::cout << "Accepted client connection. # connected: " << this->clientSockets.size() << std::endl;
     }
 }
 #pragma endregion
 
 #pragma region Private methods
+void Server::receive(SOCKET clientSocket)
+{
+    char recvbuf[DEFAULT_RECEIVE_BUFFER_LENGTH];
+    int iResult, iSendResult;
+    int recvbuflen = DEFAULT_RECEIVE_BUFFER_LENGTH;
+
+    // Receive until the peer shuts down the connection
+    while (true)
+    {
+        iResult = recv(clientSocket, recvbuf, recvbuflen, 0);
+        if (iResult > 0)
+        {
+            std::cout << "Bytes received: " << iResult << std::endl;
+
+            // Echo the buffer back to the sender
+            iSendResult = send(clientSocket, recvbuf, iResult, 0);
+            if (iSendResult == SOCKET_ERROR) {
+                std::cerr << "Error sending to client: '" << WSAGetLastError() << std::endl;
+                closesocket(clientSocket);
+            }
+            std::cout << "Bytes sent: " << iSendResult << std::endl;
+        }
+        else if (iResult == 0)
+        {
+            this->removeClientSocket(clientSocket);
+            std::cout << "Client connection closing. # connected: " << this->clientSockets.size() << std::endl;
+            break;
+        }
+        else
+        {
+            std::cerr << "Error receiving from client: '" << WSAGetLastError() << std::endl;
+            closesocket(clientSocket);
+            this->removeClientSocket(clientSocket);
+            break;
+        }
+    }
+}
+
+void Server::removeClientSocket(SOCKET clientSocket)
+{
+    std::lock_guard<std::mutex> lockGuard(this->clientDataLock);
+    auto it = std::find(
+        this->clientSockets.begin(),
+        this->clientSockets.end(),
+        clientSocket
+    );
+
+    if (it != this->clientSockets.end())
+    {
+        std::swap(*it, this->clientSockets.back());
+        this->clientSockets.pop_back();
+    }
+}
 #pragma endregion

@@ -14,6 +14,7 @@ public:
     // Public methods
     Server(unsigned short port);
     void Start();
+
 private:
     // Private members
     unsigned short port;
@@ -22,5 +23,6 @@ private:
     std::vector<SOCKET> clientSockets;
 
     // Private methods
-    
+    void receive(SOCKET clientSocket);
+    void removeClientSocket(SOCKET clientSocket);
 };
