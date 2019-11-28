@@ -73,6 +73,24 @@ void Server::Start()
         }
         std::lock_guard<std::mutex> lockGuard(this->clientDataLock);
         this->clientSockets.push_back(newClientSocket);
+
+        // Send a bunch of configuration
+        // Set NVT mode to say that I will echo back characters.
+        int iSendResult;
+        unsigned char willEcho[3] = { 0xff, 0xfb, 0x01 };
+        iSendResult = send(newClientSocket, (char *)willEcho, 3, 0);
+
+        // Set NVT requesting that the remote system not/dont echo back characters
+        unsigned char dontEcho[3] = { 0xff, 0xfe, 0x01 };
+        iSendResult = send(newClientSocket, (char *)dontEcho, 3, 0);
+
+        // Set NVT mode to say that I will supress go-ahead. Stops remote clients from doing local linemode.
+        unsigned char willSGA[3] = { 0xff, 0xfb, 0x03 };
+        iSendResult = send(newClientSocket, (char *)willSGA, 3, 0);
+
+        // Send a banner
+        iSendResult = send(newClientSocket, "Hello world!", 12, 0);
+
         // Spin up new thread to handle this client
         std::thread(&Server::receive, this, newClientSocket).detach();
         std::cout << "Accepted client connection. # connected: " << this->clientSockets.size() << std::endl;
@@ -83,40 +101,48 @@ void Server::Start()
 #pragma region Private methods
 void Server::receive(SOCKET clientSocket)
 {
-    char recvbuf[DEFAULT_RECEIVE_BUFFER_LENGTH];
-    int iResult, iSendResult;
-    int recvbuflen = DEFAULT_RECEIVE_BUFFER_LENGTH;
-
     // Receive until the peer shuts down the connection
+    std::string received;
+    char recvbuf[DEFAULT_RECEIVE_BUFFER_LENGTH];
+    int iResult, iSendResult, bufferFilledTo = 0;
+    int recvbuflen = DEFAULT_RECEIVE_BUFFER_LENGTH;
     while (true)
     {
-        iResult = recv(clientSocket, recvbuf, recvbuflen, 0);
+        iResult = recv(clientSocket, (char*)(recvbuf + bufferFilledTo), recvbuflen - bufferFilledTo, 0);
         if (iResult > 0)
         {
+            // We've received data - process what we've received so far
             std::cout << "Bytes received: " << iResult << std::endl;
-
-            // Echo the buffer back to the sender
-            iSendResult = send(clientSocket, recvbuf, iResult, 0);
-            if (iSendResult == SOCKET_ERROR) {
-                std::cerr << "Error sending to client: '" << WSAGetLastError() << std::endl;
-                closesocket(clientSocket);
-            }
-            std::cout << "Bytes sent: " << iSendResult << std::endl;
+            bufferFilledTo += iResult;
+            this->processBuffer(recvbuf, bufferFilledTo);
         }
         else if (iResult == 0)
         {
+            // This means the client closed the connection.
             this->removeClientSocket(clientSocket);
             std::cout << "Client connection closing. # connected: " << this->clientSockets.size() << std::endl;
             break;
         }
         else
         {
+            // Some error occurred.
             std::cerr << "Error receiving from client: '" << WSAGetLastError() << std::endl;
             closesocket(clientSocket);
             this->removeClientSocket(clientSocket);
             break;
         }
     }
+}
+
+void Server::processBuffer(char buffer[], int &bufferFilledTo)
+{
+    std::cout << "Processing buffer: " << bufferFilledTo << " chars." << std::endl;
+    std::cout << "\tBuffer contents: ";
+    for (unsigned int i = 0; i < bufferFilledTo; ++i)
+    {
+        std::cout << buffer[i];
+    }
+    std::cout << std::endl;
 }
 
 void Server::removeClientSocket(SOCKET clientSocket)

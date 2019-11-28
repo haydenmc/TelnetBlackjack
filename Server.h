@@ -24,5 +24,6 @@ private:
 
     // Private methods
     void receive(SOCKET clientSocket);
+    void processBuffer(char buffer[], int &bufferFilledTo);
     void removeClientSocket(SOCKET clientSocket);
 };
