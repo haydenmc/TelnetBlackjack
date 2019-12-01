@@ -4,6 +4,7 @@
 #include <climits>
 
 #include "Card.h"
+#include "Deck.h"
 #include "Server.h"
 
 const short DEFAULT_PORT = 23;

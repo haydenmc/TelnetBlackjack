@@ -43,6 +43,7 @@
         "chrono": "cpp",
         "mutex": "cpp",
         "ratio": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "random": "cpp"
     }
 }

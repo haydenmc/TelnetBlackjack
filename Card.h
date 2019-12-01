@@ -7,7 +7,8 @@ enum Suit
     Diamond,
     Club,
     Heart,
-    Spade
+    Spade,
+    MAX_SUIT
 };
 
 enum Rank
@@ -24,7 +25,8 @@ enum Rank
     R10,
     Jack,
     Queen,
-    King
+    King,
+    MAX_RANK
 };
 
 class Card

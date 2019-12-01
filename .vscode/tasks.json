@@ -19,6 +19,7 @@
                 "main.cpp",
                 "Card.cpp",
                 "Deck.cpp",
+                "Game.cpp",
                 "Server.cpp"
             ],
             "problemMatcher": [
