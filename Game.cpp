@@ -1,5 +1,5 @@
 #include "Game.h"
 
-Game::Game(Server* server):
+Game::Game(TelnetServer* server):
     server(server)
 { }

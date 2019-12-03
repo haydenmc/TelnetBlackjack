@@ -20,7 +20,8 @@
                 "Card.cpp",
                 "Deck.cpp",
                 "Game.cpp",
-                "Server.cpp"
+                "WinsockTelnetServer.cpp",
+                "WinsockTelnetSession.cpp"
             ],
             "problemMatcher": [
                 "$msCompile"

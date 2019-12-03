@@ -44,6 +44,11 @@
         "mutex": "cpp",
         "ratio": "cpp",
         "vector": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "algorithm": "cpp",
+        "functional": "cpp",
+        "list": "cpp",
+        "unordered_map": "cpp",
+        "xhash": "cpp"
     }
 }

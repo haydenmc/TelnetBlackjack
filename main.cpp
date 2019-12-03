@@ -5,7 +5,8 @@
 
 #include "Card.h"
 #include "Deck.h"
-#include "Server.h"
+#include "TelnetServer.h"
+#include "WinsockTelnetServer.h"
 
 const short DEFAULT_PORT = 23;
 
@@ -24,8 +25,8 @@ int main(int argc, char* argv[])
     }
 
     std::cout << "Starting server on port " << port << "..." << std::endl;
-    auto server = std::make_shared<Server>(port);
-    std::thread(&Server::Start, server).join();
+    auto server = std::make_shared<WinsockTelnetServer>(port);
+    std::thread(&WinsockTelnetServer::Start, server).join();
 
     return 0;
 }

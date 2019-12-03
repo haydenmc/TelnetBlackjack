@@ -2,11 +2,12 @@
 #include <functional>
 #include <string>
 
+#include "TelnetSession.h"
+
 class TelnetServer
 {
 public:
+    virtual void Start() = 0;
     virtual void OnClientConnected(
-        std::function<void(unsigned long long socket)> callback) = 0;
-    virtual void OnClientDisconnected(
-        std::function<void(unsigned long long socket, std::string reason)> callback) = 0;
+        std::function<void(TelnetSession* session)> callback) = 0;
 };

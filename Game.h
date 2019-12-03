@@ -1,15 +1,15 @@
 #pragma once
 
-#include "Server.h"
+#include "TelnetServer.h"
 
 class Game
 {
 public:
     // Public methods
-    Game(Server* server);
+    Game(TelnetServer* server);
 
 private:
     // Private members
-    Server* server = nullptr;
+    TelnetServer* server = nullptr;
 
 };
